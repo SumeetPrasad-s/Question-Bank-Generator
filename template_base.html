@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Automated Question Paper Generator{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <nav class="bg-indigo-900 text-white shadow-md no-print sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <a href="/" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-inner">
+                            <i class="fa-solid fa-file-invoice text-xl"></i>
+                        </div>
+                        <div>
+                            <span class="font-black text-lg tracking-tight block">AutoPaper</span>
+                            <span class="text-[11px] text-indigo-200 block -mt-1 font-medium">Question Paper Generator</span>
+                        </div>
+                    </a>
+                </div>
+
+                {% if current_user %}
+                <div class="flex items-center space-x-1 sm:space-x-2">
+                    {% if current_user.role == 'HOD' %}
+                        <a href="{{ url_for('hod_generate_paper_page') }}" 
+                            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>Generate Paper</span>
+                        </a>
+                        <a href="{{ url_for('hod_question_bank') }}" 
+                            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-indigo-800 text-indigo-100 hover:text-white transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-database"></i>
+                            <span class="hidden sm:inline">Question Bank</span>
+                            <span class="sm:hidden">Bank</span>
+                            {% if pending_approval_count > 0 %}
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 shadow-sm">
+                                {{ pending_approval_count }}
+                            </span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('manage_subjects') }}" 
+                            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-indigo-800 text-indigo-100 hover:text-white transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                            <span>Courses</span>
+                        </a>
+                        <a href="{{ url_for('hod_previous_papers') }}" 
+                            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-indigo-800 text-indigo-100 hover:text-white transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <span class="hidden sm:inline">Saved Papers</span>
+                            <span class="sm:hidden">Papers</span>
+                        </a>
+                    {% elif current_user.role == 'FACULTY' %}
+                        <a href="{{ url_for('faculty_my_questions') }}" 
+                            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>My Questions</span>
+                        </a>
+                        <a href="{{ url_for('faculty_add_question') }}" 
+                            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-indigo-800 text-indigo-100 hover:text-white transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-plus"></i>
+                            <span>Add Question</span>
+                        </a>
+                        <a href="{{ url_for('manage_subjects') }}" 
+                            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-indigo-800 text-indigo-100 hover:text-white transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                            <span>Courses</span>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="text-right hidden md:block">
+                        <span class="block text-sm font-bold leading-tight">{{ current_user.full_name }}</span>
+                        <span class="block text-[10px] text-indigo-300 font-semibold uppercase tracking-wider">
+                            {{ current_user.role }} &bull; {{ current_user.department }}
+                        </span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="p-2 text-indigo-200 hover:text-white hover:bg-indigo-800 rounded-xl transition" title="Sign Out">
+                        <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
+                    </a>
+                </div>
+                {% else %}
+                <div class="flex items-center gap-2">
+                    <a href="{{ url_for('login') }}" class="px-3.5 py-1.5 bg-indigo-800 hover:bg-indigo-700 rounded-xl text-xs font-bold text-white transition">Sign In</a>
+                    <a href="{{ url_for('register') }}" class="px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-400 rounded-xl text-xs font-bold text-white transition shadow">Create Account</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full no-print">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% set alert_color = 'bg-blue-100 text-blue-900 border-blue-300' %}
+                    {% if category == 'success' %}
+                        {% set alert_color = 'bg-emerald-100 text-emerald-900 border-emerald-300' %}
+                    {% elif category == 'danger' %}
+                        {% set alert_color = 'bg-rose-100 text-rose-900 border-rose-300' %}
+                    {% elif category == 'warning' %}
+                        {% set alert_color = 'bg-amber-100 text-amber-900 border-amber-300' %}
+                    {% endif %}
+                    <div class="p-3 mb-2 rounded-xl border flex items-center justify-between {{ alert_color }} shadow-sm">
+                        <div class="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-slate-800 font-bold px-1 text-base leading-none">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 no-print mt-auto">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>
+                <strong>Automated Question Paper Generator</strong> &bull; Department Examination System
+            </div>
+            <div class="text-slate-400">
+                <span>Separate Authentication & Academic Databases &bull; User Defined Courses</span>
+            </div>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
